@@ -5,6 +5,7 @@ DATE=$(date +%d-%m-%Y)
 YEST=$(date --date="yesterday" +"%d-%m-%Y")
 TIME=$(date +"%r")
 BACKUP_DIR="/home/backup"
+MYSQL_DIR="/home/mysql"  #Default location is /var/lib/mysql
 MYSQL_USER="root"
 MYSQL_PASSWORD="drRdhkr46"
 MYSQL=/usr/bin/mysql
@@ -15,7 +16,7 @@ MYSQLADMIN=/usr/bin/mysqladmin
 mkdir -p $BACKUP_DIR/$DATE
 
 # To generate name of mysql-bin file before full backup
-MYSQLBIN_OLD=`ls -lrth /home/mysql | grep mysql-bin.* | awk '{ print $9 }' | egrep -v "mysql-bin.index" | tail -n 1`
+MYSQLBIN_OLD=`ls -lrth $MYSQL_DIR | grep mysql-bin.* | awk '{ print $9 }' | egrep -v "mysql-bin.index" | tail -n 1`
 echo "The mysql-bin file before backup on $DATE - $TIME is $MYSQLBIN_OLD" > $BACKUP_DIR/$DATE/mysql-bininfo.txt
 
 # get a list of databases
@@ -31,12 +32,12 @@ done
 $MYSQLADMIN -u$MYSQL_USER -p$MYSQL_PASSWORD flush-logs
 
 # To generate name of mysql-bin file after full backup
-MYSQLBIN_NEW=`ls -lrth /home/mysql | grep mysql-bin.* | awk '{ print $9 }' | egrep -v "mysql-bin.index" | tail -n 1`
+MYSQLBIN_NEW=`ls -lrth $MYSQL_DIR | grep mysql-bin.* | awk '{ print $9 }' | egrep -v "mysql-bin.index" | tail -n 1`
 echo "The mysql-bin file after full backup on $DATE - $TIME is $MYSQLBIN_NEW" >> $BACKUP_DIR/$DATE/mysql-bininfo.txt
 
-#Comressing entire yesterday's directory
-#tar -cvzf $BACKUP_DIR/$YEST.tar.gz $BACKUP_DIR/$YEST
-#rm -rf $BACKUP_DIR/$YEST/
+#Comressing yesterday's backup directory
+tar -cvzf $BACKUP_DIR/$YEST.tar.gz $BACKUP_DIR/$YEST
+rm -rf $BACKUP_DIR/$YEST/
 
 # Delete files older than 10 days
 find $BACKUP_DIR/* -mtime +10 -exec rm -rf {} \;
